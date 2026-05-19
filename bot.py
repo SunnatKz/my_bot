@@ -12,10 +12,7 @@ if not TOKEN:
 user_data = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🔥 Привет! Напиши свою цель.\n"
-        "Через 24 часа я напомню."
-    )
+    await update.message.reply_text("🔥 Привет! Напиши свою цель, я напомню через 24 часа.")
 
 async def save_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -24,15 +21,11 @@ async def save_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_data[user_id] = {"goal": goal_text, "time": remind_time}
     
-    await update.message.reply_text(
-        f"✅ Запомнил: {goal_text}\n"
-        f"Напомню через 24 часа."
-    )
+    await update.message.reply_text(f"✅ Запомнил: {goal_text}\nНапомню через 24 часа.")
     
-    # Планируем напоминание
     context.job_queue.run_once(
         remind_user,
-        when=24*60*60,  # 24 часа в секундах
+        when=24*60*60,
         data={"user_id": user_id, "goal": goal_text}
     )
 
@@ -51,5 +44,5 @@ def main():
     print("✅ Бот запущен на Render!")
     app.run_polling()
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
