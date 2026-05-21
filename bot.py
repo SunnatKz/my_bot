@@ -1,7 +1,22 @@
 import os
+import threading
 from datetime import datetime, timedelta
+from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
+# ----- Фейковый веб-сервер для Render -----
+app_flask = Flask('')
+
+@app_flask.route('/')
+def health_check():
+    return "Бот работает!"
+
+def run_flask():
+    app_flask.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
+threading.Thread(target=run_flask).start()
+# ------------------------------------------
 
 TOKEN = os.getenv("BOT_TOKEN")
 
@@ -9,17 +24,12 @@ if not TOKEN:
     print("Ошибка: токен не найден!")
     exit(1)
 
-user_data = {}
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔥 Привет! Напиши свою цель, я напомню через 24 часа.")
 
 async def save_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     goal_text = update.message.text
-    remind_time = datetime.now() + timedelta(hours=24)
-    
-    user_data[user_id] = {"goal": goal_text, "time": remind_time}
     
     await update.message.reply_text(f"✅ Запомнил: {goal_text}\nНапомню через 24 часа.")
     
@@ -37,12 +47,12 @@ async def remind_user(context: ContextTypes.DEFAULT_TYPE):
     )
 
 def main():
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, save_goal))
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, save_goal))
     
-    print("✅ Бот запущен на Render!")
-    app.run_polling()
+    print("✅ Бот запущен и работает!")
+    application.run_polling()
 
 if __name__ == "__main__":
     main()
